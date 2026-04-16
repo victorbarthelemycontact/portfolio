@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#C6FF00">
+<title>JFK Memento // Case Study · Victor Barthelemy</title>
+<meta name="description" content="Case study // JFK Memento, expérience XR immersive pour TARGO. UI/UX design de navigation spatiale.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0B0C;--s1:#1A1A1D;--s2:#2A2A2E;--s3:#3A3A3F;
+  --hi:#E9E9EB;--lo:#A1A1AA;--dim:#52525B;
+  --lime:#C6FF00;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --r-md:16px;--r-lg:22px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--hi);font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:none;max-width:100vw}
+@media(hover:none),(pointer:coarse){body,a{cursor:auto}#cur,#cur-ring{display:none}}
+a{cursor:none}
+a:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+
+/* CURSOR */
+#cur{position:fixed;width:7px;height:7px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s}
+#cur-ring{position:fixed;width:28px;height:28px;border:1px solid rgba(198,255,0,.3);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .07s linear,width .25s,height .25s}
+.cursor-hover #cur{width:12px;height:12px}
+.cursor-hover #cur-ring{width:44px;height:44px;border-color:rgba(198,255,0,.5)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;padding:0 6vw;display:flex;align-items:center;justify-content:space-between;background:rgba(11,11,12,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lime);letter-spacing:.1em;text-decoration:none}
+.nav-back{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lo);text-decoration:none;letter-spacing:.08em;transition:color .2s}
+.nav-back:hover{color:var(--hi)}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;transition:transform .2s}
+.nav-back:hover svg{transform:translateX(-3px)}
+
+/* HERO */
+.cs-hero{min-height:70vh;display:flex;flex-direction:column;justify-content:flex-end;padding:100px max(40px,8vw) 80px;position:relative;overflow:hidden}
+.cs-hero-bg{position:absolute;inset:0}
+.cs-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(198,255,0,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(198,255,0,.03) 1px,transparent 1px);background-size:44px 44px;animation:grid-drift 25s linear infinite}
+@keyframes grid-drift{from{background-position:0 0}to{background-position:44px 44px}}
+.cs-hero-rings{position:absolute;right:10%;top:50%;transform:translateY(-50%)}
+.cs-hero-ring{position:absolute;border-radius:50%;border:1px solid rgba(198,255,0,.1);animation:rpulse 5s ease-in-out infinite;transform:translate(-50%,-50%)}
+.cs-hero-ring:nth-child(1){width:120px;height:120px;animation-delay:0s}
+.cs-hero-ring:nth-child(2){width:240px;height:240px;animation-delay:.8s}
+.cs-hero-ring:nth-child(3){width:360px;height:360px;animation-delay:1.6s}
+.cs-hero-ring:nth-child(4){width:480px;height:480px;animation-delay:2.4s}
+@keyframes rpulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.cs-hero-center{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;border:2px solid var(--lime);display:flex;align-items:center;justify-content:center}
+.cs-hero-center::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--lime)}
+.cs-hero-thumb{position:absolute;inset:0;opacity:1}
+.cs-hero-thumb-img1{position:absolute;inset:0;background:
+  linear-gradient(90deg,rgba(5,6,7,.9) 0%,rgba(5,6,7,.78) 28%,rgba(5,6,7,.42) 56%,rgba(5,6,7,.84) 100%),
+  linear-gradient(180deg,rgba(5,6,7,.18) 0%,rgba(5,6,7,.56) 100%),
+  radial-gradient(circle at 20% 30%,rgba(198,255,0,.12),transparent 24%),
+  url('jfk-hero.jpg') 72% center/cover no-repeat;
+opacity:.98;transform:scale(1.02)}
+.cs-hero-content{position:relative;z-index:2;max-width:780px}
+.cs-hero-content > *{text-shadow:0 10px 30px rgba(0,0,0,.38)}
+
+.cs-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px}
+.cs-title{font-size:clamp(44px,7vw,88px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:16px}
+.cs-title span{color:var(--lime)}
+.cs-subtitle{font-size:clamp(15px,1.8vw,18px);color:var(--lo);max-width:560px;margin-bottom:48px;line-height:1.7}
+.cs-meta-row{display:flex;gap:40px;flex-wrap:wrap}
+.cs-meta-item{}
+.cs-meta-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.cs-meta-val{font-size:14px;font-weight:500;color:var(--hi)}
+
+/* CONTENT */
+.cs-content{margin:0 auto;padding:120px max(40px,8vw) 80px;box-sizing:border-box}
+.cs-visual{box-sizing:border-box;overflow:hidden}
+.cs-jump{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.jump-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s1);border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--lo);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;transition:border-color .2s,color .2s,transform .2s}
+.jump-link:hover{color:var(--hi);border-color:var(--border2);transform:translateY(-1px)}
+.cs-summary{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:16px;margin:0 0 72px}
+.cs-summary-main,.cs-summary-side{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px}
+.cs-summary-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lime);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.cs-summary-title{font-size:clamp(24px,3vw,34px);line-height:1.15;letter-spacing:-.03em;margin-bottom:12px}
+.cs-summary-text{font-size:15px;color:var(--lo);line-height:1.85;max-width:62ch}
+.cs-summary-list{display:grid;gap:14px}
+.cs-summary-item{padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:16px}
+.cs-summary-item-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.11em;text-transform:uppercase;margin-bottom:8px}
+.cs-summary-item-value{font-size:14px;color:var(--hi);line-height:1.65}
+@media(max-width:900px){.cs-summary{grid-template-columns:1fr}}
+
+/* Section blocks */
+.cs-section{margin-bottom:96px;scroll-margin-top:88px}
+.cs-section-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.cs-section-label::before{display:none}
+.cs-section-label::before{content:'';width:24px;height:1px;background:var(--lime)}
+.cs-section-title{font-size:clamp(24px,3vw,36px);font-weight:700;letter-spacing:-.02em;margin-bottom:24px;line-height:1.2}
+.cs-text{font-size:15px;color:var(--lo);line-height:1.85;margin-bottom:16px}
+.cs-text strong{color:var(--hi);font-weight:500}
+
+/* Divider */
+.cs-divider{height:1px;background:var(--border);margin-bottom:96px}
+
+/* Episodes grid */
+.ep-grid{display:grid;gap:12px;margin-top:32px}
+.ep-card{display:flex;gap:20px;align-items:flex-start;background:var(--s1);border:1px solid var(--border);border-radius:var(--r-md);padding:20px 24px;transition:border-color .25s}
+.ep-card:hover{border-color:var(--border2)}
+.ep-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.1em;min-width:32px;padding-top:2px}
+.ep-title{font-size:14px;font-weight:600;color:var(--hi);margin-bottom:6px}
+.ep-desc{font-size:13px;color:var(--lo);line-height:1.7}
+
+/* Constraints grid */
+.constraints-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px}
+@media(max-width:600px){.constraints-grid{grid-template-columns:1fr}}
+.constraint-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-md);padding:24px}
+.constraint-icon{width:36px;height:36px;border-radius:8px;background:rgba(198,255,0,.08);border:1px solid rgba(198,255,0,.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.constraint-icon svg{width:16px;height:16px;stroke:var(--lime)}
+.constraint-title{font-size:14px;font-weight:600;color:var(--hi);margin-bottom:8px}
+.constraint-desc{font-size:13px;color:var(--lo);line-height:1.7}
+
+/* Process steps */
+.process-steps{display:flex;flex-direction:column;gap:0;margin-top:32px}
+.process-step{display:flex;gap:24px;padding-bottom:40px;position:relative}
+.process-step:last-child{padding-bottom:0}
+.process-step-left{display:flex;flex-direction:column;align-items:center;min-width:40px}
+.process-step-dot{width:10px;height:10px;border-radius:50%;background:var(--lime);border:2px solid var(--lime);flex-shrink:0;margin-top:4px}
+.process-step-line{flex:1;width:1px;background:var(--border);margin-top:6px}
+.process-step:last-child .process-step-line{display:none}
+.process-step-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lime);letter-spacing:.1em;margin-bottom:8px}
+.process-step-title{font-size:16px;font-weight:600;color:var(--hi);margin-bottom:10px}
+.process-step-desc{font-size:14px;color:var(--lo);line-height:1.75}
+
+/* Schéma flow */
+.flow-schema{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:40px;margin-top:32px;overflow-x:auto}
+.flow-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:28px}
+.flow-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;min-width:560px}
+.flow-node{background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:500;color:var(--hi);white-space:nowrap;text-align:center;min-width:110px}
+.flow-node.lime{background:rgba(198,255,0,.1);border-color:rgba(198,255,0,.3);color:var(--lime)}
+.flow-node.dim{background:transparent;border-color:var(--border);color:var(--lo);font-size:12px}
+.flow-arrow{display:flex;align-items:center;padding:0 8px;flex-shrink:0}
+.flow-arrow svg{width:16px;height:16px;stroke:var(--dim)}
+.flow-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);text-align:center;margin-top:6px;letter-spacing:.06em}
+.flow-col{display:flex;flex-direction:column;align-items:center}
+.flow-branch{display:flex;flex-direction:column;gap:8px}
+.flow-branch-item{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--lo);white-space:nowrap;text-align:center}
+
+/* Visuel placeholders */
+.cs-visual{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-top:32px}
+.cs-visual-inner{height:400px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.cs-visual img{width:100%;height:100%;object-fit:cover}
+.cs-visual-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.cs-visual-placeholder-icon{width:48px;height:48px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center}
+.cs-visual-placeholder-icon svg{width:20px;height:20px;stroke:var(--dim)}
+.cs-visual-placeholder p{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em}
+.cs-visual-caption{padding:16px 24px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.06em}
+
+/* Two col visuals */
+.cs-visuals-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px}
+@media(max-width:600px){.cs-visuals-2{grid-template-columns:1fr}}
+.cs-visual-sm .cs-visual-inner{height:260px}
+
+/* Tags */
+.cs-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.cs-tag-pill{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lo);background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:5px 14px;letter-spacing:.06em}
+
+/* Result card */
+.result-card{background:rgba(198,255,0,.05);border:1px solid rgba(198,255,0,.15);border-radius:var(--r-lg);padding:40px;margin-top:32px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px}
+@media(max-width:600px){.result-card{grid-template-columns:1fr}}
+.result-num{font-size:36px;font-weight:700;color:var(--lime);line-height:1;margin-bottom:6px}
+.result-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lo);letter-spacing:.1em;text-transform:uppercase}
+.result-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+
+/* Nav bottom */
+.cs-nav-bottom{display:flex;align-items:center;justify-content:space-between;padding:40px max(40px,8vw);border-top:1px solid var(--border);margin-top:0}
+.cs-nav-back{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--lo);font-size:14px;transition:color .2s}
+.cs-nav-back:hover{color:var(--hi)}
+.cs-nav-back svg{width:16px;height:16px;stroke:currentColor}
+.cs-nav-next{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--lo);font-size:14px;transition:color .2s;text-align:right}
+.cs-nav-next:hover{color:var(--hi)}
+.cs-nav-next svg{width:16px;height:16px;stroke:currentColor}
+.cs-nav-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+
+/* Video embed */
+
+
+/* Site link */
+.cs-site-link{display:inline-flex;align-items:center;gap:10px;margin-top:24px;padding:12px 22px;background:var(--s1);border:1px solid var(--border2);border-radius:28px;text-decoration:none;color:var(--hi);font-size:14px;transition:all .25s}
+.cs-site-link:hover{border-color:var(--lime);color:var(--lime)}
+.cs-site-link svg{width:16px;height:16px;stroke:currentColor}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+@media(max-width:700px){
+  nav{padding:0 20px}
+  .nav-back{font-size:10px}
+  .cs-hero{padding:96px 20px 56px}
+  .cs-hero-thumb-img1{background-position:64% center}
+  .cs-content{padding:88px 20px 60px}
+  .cs-section{scroll-margin-top:76px}
+  .cs-summary-main,.cs-summary-side{padding:22px}
+  .cs-nav-bottom{padding:28px 20px;flex-direction:column;align-items:flex-start;gap:20px}
+  .cs-nav-next{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<nav>
+  <a href="Home page.html" class="nav-logo">VB.design</a>
+  <a href="Home page.html#work" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    Retour aux projets
+  </a>
+</nav>
+
+<!-- HERO -->
+<div class="cs-hero">
+  <div class="cs-hero-bg">
+    <div class="cs-hero-thumb"><div class="cs-hero-thumb-img1"></div></div>
+    <div class="cs-hero-grid"></div>
+    <div class="cs-hero-rings">
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-center"></div>
+    </div>
+  </div>
+  <div class="cs-hero-content">
+    <p class="cs-tag">Case study // XR · Immersive</p>
+    <h1 class="cs-title">JFK<br><span>Memento</span></h1>
+    <p class="cs-subtitle">Conception du système de navigation spatiale pour une expérience XR documentaire // 60e anniversaire de l'assassinat de John F. Kennedy.</p>
+    <div class="cs-meta-row">
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Client</p>
+        <p class="cs-meta-val">TARGO</p>
+      </div>
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Année</p>
+        <p class="cs-meta-val">2022-2023</p>
+      </div>
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Rôle</p>
+        <p class="cs-meta-val">UI/UX Designer // Freelance</p>
+      </div>
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Résultat</p>
+        <p class="cs-meta-val" style="color:var(--lime)">Finaliste Emmy Awards</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="cs-content">
+
+  <div class="cs-jump reveal">
+    <a href="#brief" class="jump-link">Brief</a>
+    <a href="#xr" class="jump-link">Enjeux XR</a>
+    <a href="#process" class="jump-link">Process</a>
+    <a href="#videos" class="jump-link">Videos</a>
+    <a href="#result" class="jump-link">Resultat</a>
+  </div>
+
+  <div class="cs-summary reveal">
+    <div class="cs-summary-main">
+      <p class="cs-summary-kicker">Vue rapide</p>
+      <h2 class="cs-summary-title">Une interface XR pensee comme un point d'entree, pas comme un simple menu.</h2>
+      <p class="cs-summary-text">Le coeur du travail etait de rendre un contenu immersif lisible, navigable et rassurant dans un contexte sans ecran classique. L'enjeu n'etait pas seulement graphique : il fallait creer un flow spatial coherent, reduire la charge cognitive et garder une sensation de fluidite dans le casque.</p>
+    </div>
+    <div class="cs-summary-side">
+      <div class="cs-summary-list">
+        <div class="cs-summary-item">
+          <p class="cs-summary-item-label">Role</p>
+          <p class="cs-summary-item-value">UI/UX design freelance, architecture des menus, etats d'interface et livraison des assets.</p>
+        </div>
+        <div class="cs-summary-item">
+          <p class="cs-summary-item-label">Livrables</p>
+          <p class="cs-summary-item-value">Menu principal, menu in-game, chapitrage, choix de langue, composants et captures de validation.</p>
+        </div>
+        <div class="cs-summary-item">
+          <p class="cs-summary-item-label">Impact</p>
+          <p class="cs-summary-item-value">Une case study forte pour presenter ma methode sur un produit XR exigeant.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRIEF -->
+  <div id="brief" class="cs-section reveal">
+    <p class="cs-section-label">Brief</p>
+    <h2 class="cs-section-title">Un menu "à la DVD" pour la réalité virtuelle</h2>
+    <p class="cs-text">TARGO m'a contacté en mission directe freelance pour concevoir le système de navigation complet de leur expérience XR documentaire sur le 60e anniversaire de l'assassinat de JFK. L'objectif : un menu <strong>simple, immersif et fidèle à la charte graphique</strong> du film // premier point de contact avec l'application.</p>
+    <p class="cs-text">Le menu couvre deux contextes distincts : un <strong>menu principal</strong> à l'entrée (titre, résumé, logos de production, sélection de chapitre, choix de langue) et un <strong>menu in-game</strong> accessible pendant la lecture (play/pause, navigation de scène, retour).</p>
+    <p class="cs-text">Le film se déroule en <strong>5 épisodes</strong>, chacun centré sur un témoin direct des événements // de la prise de vue Polaroid au musée du Sixième Étage de Dallas.</p>
+
+    <div class="ep-grid">
+      <div class="ep-card"><span class="ep-num">EP 01</span><div><p class="ep-title">The Last Picture</p></div></div>
+      <div class="ep-card"><span class="ep-num">EP 02</span><div><p class="ep-title">Looking For The Shooter</p></div></div>
+      <div class="ep-card"><span class="ep-num">EP 03</span><div><p class="ep-title">The Manhunt</p></div></div>
+      <div class="ep-card"><span class="ep-num">EP 04</span><div><p class="ep-title">The Suspect's Profile</p></div></div>
+      <div class="ep-card"><span class="ep-num">EP 05</span><div><p class="ep-title">The Legacy Of The Assassination</p></div></div>
+    </div>
+  </div>
+
+  <div class="cs-divider"></div>
+
+  <!-- ENJEUX XR -->
+  <div id="xr" class="cs-section reveal">
+    <p class="cs-section-label">Enjeux XR</p>
+    <h2 class="cs-section-title">Concevoir sans écran // dans l'espace</h2>
+    <p class="cs-text">Un menu XR n'est pas un menu web ou mobile transposé en 3D. Les règles changent fondamentalement : <strong>il n'y a pas d'écran de référence</strong>, l'utilisateur est physiquement à l'intérieur de l'interface. Chaque décision de design doit tenir compte de l'environnement immersif.</p>
+
+    <div class="constraints-grid">
+      <div class="constraint-card">
+        <div class="constraint-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+        </div>
+        <p class="constraint-title">Gaze input // Regard comme curseur</p>
+        <p class="constraint-desc">L'utilisateur interagit par le regard, sans souris ni tactile. Chaque élément doit être dimensionné et espacé pour être sélectionnable confortablement, avec des zones de tolérance élargies.</p>
+      </div>
+      <div class="constraint-card">
+        <div class="constraint-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <p class="constraint-title">Navigation 3D // Sans repères classiques</p>
+        <p class="constraint-desc">Pas de scroll, pas de retour arrière évident. Le flux de navigation doit être <strong>linéaire et non ambigu</strong> : l'utilisateur ne doit jamais se demander où il est dans l'arborescence.</p>
+      </div>
+      <div class="constraint-card">
+        <div class="constraint-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h14"/></svg>
+        </div>
+        <p class="constraint-title">Lisibilité immersive // Contraste et typographie</p>
+        <p class="constraint-desc">Dans un casque VR, les textes trop petits ou trop denses deviennent illisibles. Hiérarchie typographique forte, contrastes élevés, et densité d'information réduite au strict nécessaire.</p>
+      </div>
+      <div class="constraint-card">
+        <div class="constraint-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <p class="constraint-title">Confort // Prévention du motion sickness</p>
+        <p class="constraint-desc">Les animations trop rapides ou les transitions brusques peuvent provoquer un malaise. Chaque transition a été pensée pour rester <strong>fluide et prévisible</strong>, ancrant l'utilisateur dans l'espace.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cs-divider"></div>
+
+  <!-- PROCESS -->
+  <div id="process" class="cs-section reveal">
+    <p class="cs-section-label">Process</p>
+    <h2 class="cs-section-title">Exploration // Décisions // Livraison</h2>
+    <p class="cs-text">La mission couvrait l'intégralité du flux : du brief initial jusqu'à l'intégration des assets finaux. Plusieurs itérations de flows ont été proposées avant d'arrêter la direction définitive.</p>
+
+    
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="process-step-left"><div class="process-step-dot"></div><div class="process-step-line"></div></div>
+        <div>
+          <p class="process-step-num">01</p>
+          <p class="process-step-title">Analyse du brief // Contraintes techniques</p>
+          <p class="process-step-desc">Lecture approfondie des specs TARGO, identification des deux contextes d'usage distincts (menu principal / menu in-game), et mapping des 5 épisodes avec leur contenu éditorial spécifique.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-step-left"><div class="process-step-dot"></div><div class="process-step-line"></div></div>
+        <div>
+          <p class="process-step-num">02</p>
+          <p class="process-step-title">Exploration des flows // Plusieurs versions</p>
+          <p class="process-step-desc">Proposition de plusieurs architectures de navigation : flow linéaire séquentiel, sélection de chapitre par carte spatiale, interface radiale centrée sur le gaze. Chaque option évaluée selon les contraintes XR.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-step-left"><div class="process-step-dot"></div><div class="process-step-line"></div></div>
+        <div>
+          <p class="process-step-num">03</p>
+          <p class="process-step-title">Design des agencements // Charte graphique</p>
+          <p class="process-step-desc">Conception des différents états du menu en suivant la charte visuelle du film. Typographie adaptée à la lisibilité VR, hiérarchie claire, gestion des logos des 5 sociétés de production.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-step-left"><div class="process-step-dot"></div><div class="process-step-line"></div></div>
+        <div>
+          <p class="process-step-num">04</p>
+          <p class="process-step-title">Création des assets // Intégration</p>
+          <p class="process-step-desc">Export et préparation de tous les assets pour intégration. Collaboration directe avec l'équipe technique TARGO pour adapter les formats aux contraintes du moteur XR.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-step-left"><div class="process-step-dot"></div></div>
+        <div>
+          <p class="process-step-num">05</p>
+          <p class="process-step-title">Capture vidéo // Livraison finale</p>
+          <p class="process-step-desc">Capture vidéo 2D du film global pour validation finale. Livraison de l'ensemble des livrables, documentation du flow complet pour les équipes TARGO.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cs-tags">
+      <span class="cs-tag-pill">Figma</span>
+      <span class="cs-tag-pill">XR / Spatial UI</span>
+      <span class="cs-tag-pill">Gaze interaction</span>
+      <span class="cs-tag-pill">Assets export</span>
+      <span class="cs-tag-pill">Motion design</span>
+      <span class="cs-tag-pill">Intégration</span>
+    </div>
+  </div>
+
+  <div class="cs-divider"></div>
+
+  <!-- DESIGN FINAL -->
+  <div id="videos" class="cs-section reveal">
+    <p class="cs-section-label">Design final</p>
+    <h2 class="cs-section-title">Captures vidéo // Environnement XR simulé</h2>
+    <p class="cs-text">Simulation de l'environnement XR // rendu final du système de navigation spatiale.</p>
+
+    <div class="cs-visual" style="margin-top:32px">
+      <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:var(--r-md) var(--r-md) 0 0">
+        <iframe src="https://www.youtube.com/embed/qCwKvl0ShIE" title="JFK Memento — Menu principal" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%"></iframe>
+      </div>
+      <p class="cs-visual-caption">Capture vidéo // Simulation environnement XR — Menu principal</p>
+    </div>
+
+    <div class="cs-visual" style="margin-top:24px">
+      <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:var(--r-md) var(--r-md) 0 0">
+        <iframe src="https://www.youtube.com/embed/Hz4dwGCJb3g" title="JFK Memento — Menu in-game" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%"></iframe>
+      </div>
+      <p class="cs-visual-caption">Capture vidéo // Simulation environnement XR — Menu in-game</p>
+    </div>
+  </div>
+
+  <div class="cs-divider"></div>
+
+  <!-- RÉSULTAT -->
+  <div id="result" class="cs-section reveal">
+    <p class="cs-section-label">Résultat</p>
+    <h2 class="cs-section-title">Finaliste Emmy Awards</h2>
+    <p class="cs-text">JFK Memento a été <strong>sélectionné aux Emmy Awards</strong> dans la catégorie immersive. Le projet illustre la capacité à concevoir des interfaces adaptées à des formats émergents, en intégrant des contraintes techniques fortes tout en maintenant une expérience utilisateur fluide et cohérente avec l'univers éditorial du film.</p>
+    <div class="result-card">
+      <div>
+        <p class="result-num">2</p>
+        <p class="result-label">Contextes d'usage couverts</p>
+      </div>
+      <div>
+        <p class="result-num">5</p>
+        <p class="result-label">Episodes organises dans le flow</p>
+      </div>
+      <div>
+        <p class="result-num">XR</p>
+        <p class="result-label">Navigation spatiale pensee pour le regard</p>
+      </div>
+    </div>
+    <div class="result-actions">
+      <a href="Home page.html#work" class="cs-site-link">
+        Voir les autres projets
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+      <a href="Home page.html#contact" class="cs-site-link">
+        Discuter d'un projet
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV BOTTOM -->
+<div class="cs-nav-bottom">
+  <a href="Home page.html#work" class="cs-nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    <div>
+      <p class="cs-nav-label">Retour</p>
+      <p>Tous les projets</p>
+    </div>
+  </a>
+  <a href="Home page.html#contact" class="cs-nav-next">
+    <div>
+      <p class="cs-nav-label" style="text-align:right">Et maintenant</p>
+      <p>Parlons du prochain projet</p>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+
+<script>
+const cur=document.getElementById('cur');
+const ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:.08});
+document.querySelectorAll('.reveal').forEach((el,i)=>{
+  el.style.transitionDelay=(i%4)*.1+'s';
+  obs.observe(el);
+});
+</script>
+
+</body>
+</html>

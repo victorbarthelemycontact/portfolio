@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#C6FF00">
+<title>Interface de supervision liee a la defense // Case Study · Victor Barthelemy</title>
+<meta name="description" content="Case study // Interface de supervision liee a la defense, design IHM en environnement critique pour Fauche.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0B0B0C;--s1:#1A1A1D;--s2:#2A2A2E;--hi:#E9E9EB;--lo:#A1A1AA;--dim:#52525B;--lime:#C6FF00;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--r1:16px;--r2:22px}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--hi);font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:1.65;overflow-x:hidden;cursor:none}
+@media(hover:none),(pointer:coarse){body,a{cursor:auto}#cur,#ring{display:none}}
+a{cursor:none}
+a:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+#cur{position:fixed;width:7px;height:7px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#ring{position:fixed;width:28px;height:28px;border:1px solid rgba(198,255,0,.3);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .07s linear,width .25s,height .25s}
+.cursor-hover #ring{width:44px;height:44px;border-color:rgba(198,255,0,.5)}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;padding:0 6vw;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,11,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lime);letter-spacing:.1em;text-decoration:none}
+.nav-back{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lo);text-decoration:none;letter-spacing:.08em}
+.nav-back:hover{color:var(--hi)}
+.nav-back svg{width:14px;height:14px;stroke:currentColor}
+.cs-hero{min-height:70vh;display:flex;flex-direction:column;justify-content:flex-end;padding:100px max(40px,8vw) 80px;position:relative;overflow:hidden}
+.cs-hero-bg{position:absolute;inset:0}
+.cs-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(198,255,0,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(198,255,0,.03) 1px,transparent 1px);background-size:44px 44px;animation:grid-drift 25s linear infinite}
+@keyframes grid-drift{from{background-position:0 0}to{background-position:44px 44px}}
+.cs-hero-rings{position:absolute;right:10%;top:50%;transform:translateY(-50%)}
+.cs-hero-ring{position:absolute;border-radius:50%;border:1px solid rgba(198,255,0,.1);animation:rpulse 5s ease-in-out infinite;transform:translate(-50%,-50%)}
+.cs-hero-ring:nth-child(1){width:120px;height:120px;animation-delay:0s}
+.cs-hero-ring:nth-child(2){width:240px;height:240px;animation-delay:.8s}
+.cs-hero-ring:nth-child(3){width:360px;height:360px;animation-delay:1.6s}
+.cs-hero-ring:nth-child(4){width:480px;height:480px;animation-delay:2.4s}
+@keyframes rpulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.cs-hero-center{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;border:2px solid var(--lime);display:flex;align-items:center;justify-content:center}
+.cs-hero-center::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--lime)}
+.cs-hero-thumb{position:absolute;inset:0;opacity:1}
+.cs-hero-thumb-img1{position:absolute;inset:0;background:
+  linear-gradient(90deg,rgba(5,6,7,.92) 0%,rgba(5,6,7,.8) 30%,rgba(5,6,7,.46) 58%,rgba(5,6,7,.86) 100%),
+  linear-gradient(180deg,rgba(5,6,7,.15) 0%,rgba(5,6,7,.62) 100%),
+  radial-gradient(circle at 20% 30%,rgba(198,255,0,.16),transparent 24%),
+  url('ihm-defense-hero.png') 72% center/cover no-repeat;
+opacity:.98;transform:scale(1.02)}
+.cs-hero-content{position:relative;z-index:2;max-width:780px}
+.cs-hero-content > *{text-shadow:0 10px 30px rgba(0,0,0,.38)}
+.cs-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px}
+.cs-title{font-size:clamp(44px,7vw,88px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:16px}
+.cs-title span{color:var(--lime)}
+.cs-subtitle{font-size:clamp(15px,1.8vw,18px);color:var(--lo);max-width:620px;margin-bottom:48px;line-height:1.7}
+.cs-meta-row{display:flex;gap:40px;flex-wrap:wrap}
+.cs-meta-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.cs-meta-val{font-size:14px;font-weight:500;color:var(--hi)}
+.content{padding:120px max(40px,8vw) 80px}
+.jump{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.jump a{display:inline-flex;align-items:center;padding:10px 14px;background:var(--s1);border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--lo);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.jump a:hover{color:var(--hi);border-color:var(--border2)}
+.summary{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:16px;margin:0 0 72px}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:28px}
+.summary-kicker,.section-label,.mini{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.summary-kicker,.section-label{color:var(--lime)}
+.summary-title{font-size:clamp(24px,3vw,34px);line-height:1.15;letter-spacing:-.03em;margin:14px 0 12px}
+.summary-text,.text{font-size:15px;color:var(--lo);line-height:1.85}
+.summary-list{display:grid;gap:14px}
+.summary-item{padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:16px}
+.summary-item-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.11em;text-transform:uppercase;margin-bottom:8px}
+.summary-item-value{font-size:14px;line-height:1.65}
+.section{margin-bottom:96px;scroll-margin-top:88px}
+.section-title{font-size:clamp(24px,3vw,36px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:20px 0 24px}
+.text{max-width:74ch;margin-bottom:16px}
+.text strong{color:var(--hi);font-weight:500}
+.divider{height:1px;background:var(--border);margin-bottom:96px}
+.grid-3,.grid-2{display:grid;gap:16px;margin-top:32px}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r1);padding:24px}
+.card-title{font-size:16px;font-weight:600;margin:10px 0}
+.card-text{font-size:14px;color:var(--lo);line-height:1.75}
+.icon{width:38px;height:38px;border-radius:10px;background:rgba(198,255,0,.08);border:1px solid rgba(198,255,0,.15);display:flex;align-items:center;justify-content:center}
+.icon svg{width:18px;height:18px;stroke:var(--lime)}
+.steps{display:flex;flex-direction:column;gap:0;margin-top:32px}
+.step{display:flex;gap:24px;padding-bottom:40px}
+.step:last-child{padding-bottom:0}
+.step-left{display:flex;flex-direction:column;align-items:center;min-width:40px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--lime);border:2px solid var(--lime);margin-top:4px}
+.line{flex:1;width:1px;background:var(--border);margin-top:6px}
+.step:last-child .line{display:none}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lime);letter-spacing:.1em;margin-bottom:8px}
+.step-title{font-size:16px;font-weight:600;margin-bottom:10px}
+.step-desc{font-size:14px;color:var(--lo);line-height:1.75}
+.visual{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.visual{margin-top:32px}
+.visual img{display:block;width:100%;height:100%;object-fit:cover}
+.visual-caption{padding:16px 24px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.06em}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lo);background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:5px 14px}
+.result{background:rgba(198,255,0,.05);border:1px solid rgba(198,255,0,.15);border-radius:var(--r2);padding:40px;margin-top:32px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.num{font-size:34px;font-weight:700;color:var(--lime);line-height:1;margin-bottom:6px}
+.num-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lo);letter-spacing:.1em;text-transform:uppercase}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:12px 22px;background:var(--s1);border:1px solid var(--border2);border-radius:28px;text-decoration:none;color:var(--hi);font-size:14px}
+.btn:hover{border-color:var(--lime);color:var(--lime)}
+.btn svg,.bottom a svg{width:16px;height:16px;stroke:currentColor}
+.bottom{display:flex;align-items:center;justify-content:space-between;padding:40px max(40px,8vw);border-top:1px solid var(--border)}
+.bottom a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--lo)}
+.bottom a:hover{color:var(--hi)}
+.bottom-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+@media(max-width:900px){.summary,.grid-3,.grid-2,.result{grid-template-columns:1fr}}
+@media(max-width:700px){nav{padding:0 20px}.cs-hero{padding:96px 20px 56px}.cs-hero-thumb-img1{background-position:64% center}.content{padding:88px 20px 60px}.section{scroll-margin-top:76px}.panel,.card{padding:22px}.step{gap:16px}.bottom{padding:28px 20px;flex-direction:column;align-items:flex-start;gap:20px}}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="ring"></div>
+
+<nav>
+  <a href="Home page.html" class="nav-logo">VB.design</a>
+  <a href="Home page.html#work" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    Retour aux projets
+  </a>
+</nav>
+
+<div class="cs-hero">
+  <div class="cs-hero-bg">
+    <div class="cs-hero-thumb"><div class="cs-hero-thumb-img1"></div></div>
+    <div class="cs-hero-grid"></div>
+    <div class="cs-hero-rings">
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-ring"></div>
+      <div class="cs-hero-center"></div>
+    </div>
+  </div>
+  <div class="cs-hero-content">
+    <p class="cs-tag">Case study // Defense · IHM critique</p>
+    <h1 class="cs-title">Interface de supervision<br><span>defense</span></h1>
+    <p class="cs-subtitle">Conception d'ecrans de supervision pour un environnement defense, avec un enjeu central : rendre une interface dense plus lisible, plus robuste et mieux adaptee a un usage critique.</p>
+    <div class="cs-meta-row">
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Client</p>
+        <p class="cs-meta-val">Fauche</p>
+      </div>
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Annee</p>
+        <p class="cs-meta-val">Mai - Juillet 2019</p>
+      </div>
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Role</p>
+        <p class="cs-meta-val">Designer IHM</p>
+      </div>
+      <div class="cs-meta-item">
+        <p class="cs-meta-label">Resultat</p>
+        <p class="cs-meta-val">Reponse adaptee a un environnement critique</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="jump reveal">
+    <a href="#brief">Brief</a>
+    <a href="#ux">Contraintes UX</a>
+    <a href="#process">Process</a>
+    <a href="#ui">Direction IHM</a>
+    <a href="#result">Resultat</a>
+  </div>
+
+  <div class="summary reveal">
+    <div class="panel">
+      <p class="summary-kicker">Vue rapide</p>
+      <h2 class="summary-title">Un projet sensible qui m'a appris a designer avec exigence, retenue et responsabilite.</h2>
+      <p class="summary-text">Cette mission menee chez <strong>Fauche</strong> m'a confronte a un cadre tres particulier : un sujet soumis a de fortes regles de confidentialite, des contraintes techniques existantes et une exigence d'usage elevee. Le travail ne consistait pas a rendre l'interface spectaculaire, mais a <strong>simplifier sans appauvrir</strong>, pour aider des operateurs a superviser une installation avec une lecture plus immediate.</p>
+    </div>
+    <div class="panel">
+      <div class="summary-list">
+        <div class="summary-item"><p class="summary-item-label">Ce que le projet raconte</p><p class="summary-item-value">Ma capacite a concevoir sous forte contrainte, dans un environnement sensible ou la clarte prime sur tout le reste.</p></div>
+        <div class="summary-item"><p class="summary-item-label">Point fort</p><p class="summary-item-value">Donner une hierarchie nette a des ecrans de supervision denses, avec un droit a l'erreur tres faible.</p></div>
+        <div class="summary-item"><p class="summary-item-label">Contexte</p><p class="summary-item-value">Stage a temps plein prolonge d'un mois pour poursuivre la mission apres des retours positifs sur le travail produit.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="brief" class="section reveal">
+    <p class="section-label">Brief</p>
+    <h2 class="section-title">Superviser une installation dans un cadre defense, sans perdre la lecture de l'essentiel</h2>
+    <p class="text">Le projet portait sur une <strong>interface de supervision liee a la defense</strong>. L'objectif etait d'accompagner la lecture d'un environnement technique dense en aidant l'operateur a reperer rapidement les bons niveaux d'information : <strong>etats systeme, alertes, anomalies, capteurs, flux et mesures</strong>.</p>
+    <p class="text">Sur ce type d'IHM, le design ne cherche pas a impressionner. Il doit avant tout reduire l'ambiguite, soutenir la prise de decision et respecter un cadre technique deja en partie existant. Le projet etait aussi marque par une confidentialite stricte, ce qui impose ici de rester volontairement sobre sur certains details.</p>
+    <div class="grid-3">
+      <div class="card"><p class="mini">01 · Objectif</p><p class="card-title">Rendre l'information exploitable plus vite</p><p class="card-text">L'interface devait permettre de superviser une installation avec une lecture directe des etats, des mesures et des signaux prioritaires.</p></div>
+      <div class="card"><p class="mini">02 · Cadre</p><p class="card-title">Un environnement sensible et contraint</p><p class="card-text">Le contexte defense impliquait rigueur, discretion et respect de contraintes metier et techniques qui limitaient naturellement certaines libertes UX/UI.</p></div>
+      <div class="card"><p class="mini">03 · Ma mission</p><p class="card-title">Designer l'interface utile</p><p class="card-text">Conception UI des ecrans de supervision, travail de hierarchie visuelle et prototypage sur un projet melant adaptation de l'existant et conception plus neuve.</p></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="ux" class="section reveal">
+    <p class="section-label">Contraintes UX</p>
+    <h2 class="section-title">Quand la lisibilite immediate devient la priorite absolue</h2>
+    <p class="text">Le coeur du projet etait la <strong>simplicite d'usage dans un contexte critique</strong>. Les ecrans devaient absorber une densite d'informations importante sans devenir confus. L'enjeu n'etait pas de reduire artificiellement le contenu, mais de le rendre plus lisible, mieux ordonne et plus actionnable.</p>
+    <div class="grid-2">
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><p class="card-title">Lisibilite immediate</p><p class="card-text">Dans ce contexte, quelques secondes de flottement peuvent deja etre de trop. La lecture des informations devait etre plus directe, sans surcharge decorative ni ambiguite de niveau.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 12h14"/></svg></div><p class="card-title">Interface dense mais simple</p><p class="card-text">Les donnees critiques, les mesures et les anomalies devaient coexister dans une meme interface, avec une organisation plus claire et une meilleure priorisation visuelle.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.71-3.14l-8-14a2 2 0 0 0-3.42 0z"/></svg></div><p class="card-title">Usage critique, faible droit a l'erreur</p><p class="card-text">Les alertes et les anomalies devaient beneficier d'une hierarchie plus nette afin d'eviter les mauvaises interpretations et de soutenir une reaction adaptee.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8"/></svg></div><p class="card-title">Contraintes techniques et legacy</p><p class="card-text">Le projet ne partait pas d'une feuille blanche. Il fallait composer avec de l'existant, comprendre les limites du systeme en place et produire vite, proprement, sans casser la logique metier.</p></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="process" class="section reveal">
+    <p class="section-label">Process</p>
+    <h2 class="section-title">Observer, simplifier, prototyper</h2>
+    <p class="text">Cette mission m'a appris a avancer avec methode dans un cadre contraint. Le travail a surtout porte sur la qualite de lecture des interfaces et sur la maniere d'organiser les informations pour qu'elles soient comprises plus vite, avec moins d'hesitation.</p>
+    <div class="steps">
+      <div class="step"><div class="step-left"><div class="dot"></div><div class="line"></div></div><div><p class="step-num">01</p><p class="step-title">Prise en main d'un contexte sensible</p><p class="step-desc">Comprendre un sujet soumis a la confidentialite, integrer les contraintes d'un environnement defense et identifier ce qu'il etait possible d'ameliorer sans sortir du cadre impose.</p></div></div>
+      <div class="step"><div class="step-left"><div class="dot"></div><div class="line"></div></div><div><p class="step-num">02</p><p class="step-title">Lecture de l'existant et besoins operateur</p><p class="step-desc">Analyser les ecrans existants, reperer les zones de confusion et mieux hierarchiser les informations critiques pour faciliter la supervision de l'installation.</p></div></div>
+      <div class="step"><div class="step-left"><div class="dot"></div><div class="line"></div></div><div><p class="step-num">03</p><p class="step-title">Travail de hierarchie visuelle</p><p class="step-desc">Reorganiser la presence des alertes, des mesures et des etats systeme afin de clarifier les niveaux de lecture et de reduire la charge cognitive dans un usage dense.</p></div></div>
+      <div class="step"><div class="step-left"><div class="dot"></div><div class="line"></div></div><div><p class="step-num">04</p><p class="step-title">Prototypage et iteration rapide</p><p class="step-desc">Produire des propositions exploitables rapidement, affiner les ecrans et ajuster les arbitrages entre lisibilite, contraintes techniques et attentes metier.</p></div></div>
+      <div class="step"><div class="step-left"><div class="dot"></div></div><div><p class="step-num">05</p><p class="step-title">Confiance gagnee sur la suite</p><p class="step-desc">Le stage a ete prolonge d'un mois pour poursuivre la mission, un signal discret mais fort sur la qualite et la pertinence du travail realise dans un contexte exigeant.</p></div></div>
+    </div>
+    <div class="tags">
+      <span class="tag">Designer IHM</span><span class="tag">Systemes critiques</span><span class="tag">Hierarchie visuelle</span><span class="tag">Prototypage</span><span class="tag">Confidentialite</span><span class="tag">Legacy</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="ui" class="section reveal">
+    <p class="section-label">Direction IHM</p>
+    <h2 class="section-title">Une interface plus lisible, sans surdesign ni perte d'information</h2>
+    <p class="text">Ce type de projet rappelle une chose essentielle : <strong>la bonne UI n'est pas celle qui attire l'oeil, mais celle qui aide a agir</strong>. La direction IHM a donc cherche un equilibre entre densite, clarte et robustesse, avec une attention particuliere a la lecture des etats systeme, a la visibilite des alertes et a la coherence globale des ecrans.</p>
+    <p class="text">Le visuel partage ici reste volontairement generique. Il sert surtout a poser l'ambiance du projet sans exposer d'elements confidentiels, ce qui est coherent avec la nature sensible du sujet.</p>
+    <div class="visual">
+      <img src="ihm-defense-hero.png" alt="Ambiance projet supervision defense">
+      <div class="visual-caption">Ambiance projet // supervision, donnees critiques, lecture multi-supports dans un cadre sensible</div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><p class="mini">Principe 01</p><p class="card-title">Prioriser ce qui compte</p><p class="card-text">Faire ressortir les informations utiles au bon moment, sans mettre tous les elements au meme niveau visuel.</p></div>
+      <div class="card"><p class="mini">Principe 02</p><p class="card-title">Simplifier sans masquer</p><p class="card-text">Garder la richesse de donnees necessaire a la supervision, mais avec une structure plus claire et plus stable.</p></div>
+      <div class="card"><p class="mini">Principe 03</p><p class="card-title">Designer pour l'usage reel</p><p class="card-text">Produire des ecrans credibles dans leur contexte d'exploitation, au service d'operateurs et non d'une demonstration graphique.</p></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="result" class="section reveal">
+    <p class="section-label">Resultat</p>
+    <h2 class="section-title">Une premiere experience forte sur les interfaces critiques</h2>
+    <p class="text">Ce projet reste important dans mon parcours parce qu'il m'a appris a travailler serieusement tres tot sur un sujet <strong>ultra sensible</strong>, avec une vraie exigence de clarte, de retenue et d'efficacite. Il montre aussi ma capacite a comprendre vite un cadre metier contraint et a produire une reponse adaptee, sans chercher a faire plus que ce que le contexte autorise.</p>
+    <div class="result">
+      <div><p class="num">2019</p><p class="num-label">Mission menee de mai a juillet chez Fauche</p></div>
+      <div><p class="num">IHM</p><p class="num-label">UI supervision, hierarchie visuelle et prototypage</p></div>
+      <div><p class="num">Critique</p><p class="num-label">Reponse adaptee a un environnement a faible droit a l'erreur</p></div>
+    </div>
+    <div class="actions">
+      <a href="https://www.fauche.com/" target="_blank" rel="noopener" class="btn">Decouvrir Fauche<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+      <a href="Home page.html#contact" class="btn">Discuter d'un projet<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <a href="Home page.html#work">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    <div><p class="bottom-label">Retour</p><p>Tous les projets</p></div>
+  </a>
+  <a href="Home page.html#contact">
+    <div><p class="bottom-label" style="text-align:right">Et maintenant</p><p>Parlons du prochain projet</p></div>
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+
+<script>
+const cur=document.getElementById('cur');
+const ring=document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop)})();
+document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'))});
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.08});
+document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%4)*.1+'s';obs.observe(el)});
+</script>
+</body>
+</html>
